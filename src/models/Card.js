@@ -13,6 +13,11 @@ const cardSchema = new mongoose.Schema({
     answer: {
         type: String,
         required: true
+    },
+    category: {
+        type: String,
+        required: true,
+        enum: ["Kanji", "Vocabulary"]
     }
 });
 
