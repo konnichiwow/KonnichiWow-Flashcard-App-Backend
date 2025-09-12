@@ -168,3 +168,42 @@ export const logOutController = async (req,res)=>{
     return res.status(500).json({error:"Server Error"});
   }
 }
+
+export const googleSignIn = async (req,res)=>{
+  try{
+    const token = req.body.token;
+    if(!token){
+      return res.status(400).json({error:"Token not found in request body"});
+    }
+    //verify token
+    const userdata = await auth.verifyIdToken(token);
+
+    console.log(userdata);
+    let user = await User.findOne({email:userdata.email});
+
+    //if this is a new user , create an entry in db
+    if(!user){
+      user = await User.create({
+        firebaseUID:userdata.uid,
+        email:userdata.email,
+        name:userdata.name
+      });
+    }
+
+    //now lets set the jwt as a cookie
+    res.cookie("accessToken",token,{
+      httpOnly: true,
+      secure: false, //for now
+      sameSite: "strict",
+      path:"/",
+      maxAge: 60* 60 * 1000,
+    });
+
+    return res.status(200).json({message:"User signed in successfully"});
+
+  }
+  catch(e){
+    console.log(`Error in logging user in via google : ${e}`);
+    return res.status(500).json({message:"Server Error"});
+  }
+}
