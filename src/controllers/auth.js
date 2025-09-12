@@ -75,6 +75,7 @@ export const signInUser = async (req,res) => {
       httpOnly: true,
       secure: false, //for now
       sameSite: "strict",
+      path:"/",
       maxAge: parseInt(expiresIn) * 1000,
     });
 
@@ -82,6 +83,7 @@ export const signInUser = async (req,res) => {
       httpOnly: true,
       secure: false,
       sameSite: "strict",
+      path:"/",
       maxAge: 7 * 24 * 60 * 60 * 1000, //refresh token remains valid on client for 7 days
     });
 
@@ -128,6 +130,7 @@ export const refreshTokenController = async (req,res)=>{
       httpOnly: true,
       secure: false,
       sameSite: "strict",
+      path : "/",
       maxAge: parseInt(expires_in) * 1000 // convert seconds to ms
     });
 
@@ -135,6 +138,7 @@ export const refreshTokenController = async (req,res)=>{
       httpOnly: true,
       secure: false,
       sameSite: "strict",
+      path:"/",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days validity for refreshToken
     });
     return res.status(200).json({message:"Token refreshed successfully"});
@@ -146,6 +150,21 @@ export const refreshTokenController = async (req,res)=>{
       return res.status(401).json({error:"invalid refresh token"});
     }
     console.log(err||e.message);
+    return res.status(500).json({error:"Server Error"});
+  }
+}
+
+
+export const logOutController = async (req,res)=>{
+  try{
+    const uid = req.user.uid;
+    res.clearCookie("accessToken", {path : "/"});
+    res.clearCookie("refreshToken", {path: "/"});
+    await auth.revokeRefreshTokens(uid);
+    res.status(200).json({message:"Logged User Out Successfully"});
+  }
+  catch(e){
+    console.log(`Error in logging out a user : ${e} `);
     return res.status(500).json({error:"Server Error"});
   }
 }
