@@ -11,6 +11,7 @@ const shuffle = (arr) => {
 
 export const cards = async (req, res) => {
   const { id } = req.params;
+  if (!id || isNaN(id)) return res.status(400).json({ message: "Valid Card ID is required" });
   const card = await Card.findOne({ id: parseInt(id) });
   if (!card) return res.status(404).json({ message: `Card with ID ${id} not found` });
   return res.json(card);
