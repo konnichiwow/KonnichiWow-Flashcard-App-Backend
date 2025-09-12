@@ -21,8 +21,8 @@ export const kanji = async (req, res) => {
   const { shuffled = "false", starred = null } = req.query;
   const cards = await Card.find({ category: "Kanji" });
   if (starred === "true") {
-    const starredIDs = await Users.findOne({ email: req.user.email }).select("starredCards").starredCards;
-    const starredCards = cards.filter(card => starredIDs.includes(card.id));
+    const user = await Users.findOne({ email: req.user.email }).select("starredCards");
+    const starredCards = cards.filter(card => user.starredCards.includes(card.id));
     return res.json(shuffled === "true" ? shuffle(starredCards) : starredCards);
   }
   return res.json(shuffled === "true" ? shuffle(cards) : cards);
@@ -32,8 +32,8 @@ export const vocabulary = async (req, res) => {
   const { shuffled = "false", starred = null } = req.query;
   const cards = await Card.find({ category: "Vocabulary" });
   if (starred === "true") {
-    const starredIDs = await Users.findOne({ email: req.user.email }).select("starredCards").starredCards;
-    const starredCards = cards.filter(card => starredIDs.includes(card.id));
+    const user = await Users.findOne({ email: req.user.email }).select("starredCards");
+    const starredCards = cards.filter(card => user.starredCards.includes(card.id));
     return res.json(shuffled === "true" ? shuffle(starredCards) : starredCards);
   }
   return res.json(shuffled === "true" ? shuffle(cards) : cards);
