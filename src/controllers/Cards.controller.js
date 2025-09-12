@@ -1,5 +1,5 @@
 import Card from "../models/Card.js";
-//import User from "../models/User.js";
+import Users from "../models/Users";
 
 const shuffle = (arr) => {
   return arr;
@@ -16,7 +16,7 @@ export const kanji = async (req, res) => {
   const { shuffled = "false", starred = null } = req.query;
   const cards = await Card.find({ category: "Kanji" });
   if (starred === "true") {
-    const starredIDs = await User.findOne({ id: req.user.id }).select("starredCards").starredCards;
+    const starredIDs = await Users.findOne({ id: req.user.id }).select("starredCards").starredCards;
     // User model doesn't exist yet, but I guess this is how the starred cards' IDs would be fetched
     const starredCards = cards.filter(card => starredIDs.includes(card.id));
     return res.json(shuffled === "true" ? shuffle(starredCards) : starredCards);
@@ -28,7 +28,7 @@ export const vocabulary = async (req, res) => {
   const { shuffled = "false", starred = null } = req.query;
   const cards = await Card.find({ category: "Vocabulary" });
   if (starred === "true") {
-    const starredIDs = await User.findOne({ id: req.user.id }).select("starredCards").starredCards;
+    const starredIDs = await Users.findOne({ id: req.user.id }).select("starredCards").starredCards;
     // User model doesn't exist yet
     const starredCards = cards.filter(card => starredIDs.includes(card.id));
     return res.json(shuffled === "true" ? shuffle(starredCards) : starredCards);
@@ -41,7 +41,7 @@ export const star = async (req, res) => {
   if (!id) {
     return res.status(400).json({ message: "Card ID is required" });
   }
-  const user = await User.findOne({ id: req.user.id });
+  const user = await Users.findOne({ id: req.user.id });
   if (req.method === "POST") {
     if (!user.starredCards.includes(parseInt(id))) user.starredCards.push(parseInt(id));
     await user.save();
