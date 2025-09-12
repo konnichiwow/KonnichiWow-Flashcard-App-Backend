@@ -1,4 +1,4 @@
-import Users from "../models/Users";
+import Users from "../models/Users.js";
 
 export const stars = async (req, res) => {
     const user = await Users.findOne({ email: req.user.email });

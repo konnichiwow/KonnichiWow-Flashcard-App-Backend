@@ -1,7 +1,7 @@
 import express from "express";
 
-import { stars } from "../controllers/User.controller";
-import asyncHandler from "../utils/asyncHandler";
+import { stars } from "../controllers/User.controller.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 const router = express.Router();
 

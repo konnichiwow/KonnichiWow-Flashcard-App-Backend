@@ -1,7 +1,7 @@
 import express from "express";
 
-import { cards, kanji, vocabulary, star } from "../controllers/Cards.controller";
-import { asyncHandler } from "../utils/asyncHandler";
+import { cards, kanji, vocabulary, star } from "../controllers/Cards.controller.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const router = express.Router();
 

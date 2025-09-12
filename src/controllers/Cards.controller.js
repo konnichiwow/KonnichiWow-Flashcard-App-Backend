@@ -1,5 +1,5 @@
 import Card from "../models/Card.js";
-import Users from "../models/Users";
+import Users from "../models/Users.js";
 
 const shuffle = (arr) => {
   for (let i = arr.length - 1; i > 0; i--) {
