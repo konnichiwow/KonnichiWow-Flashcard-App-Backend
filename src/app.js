@@ -3,9 +3,11 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import "./config/firebase.js"; 
 import auth from "./routes/auth.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 dotenv.config();
 
 connectDB();
