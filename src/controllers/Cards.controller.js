@@ -5,6 +5,15 @@ const shuffle = (arr) => {
   return arr;
 };
 
+export const cards = async (req, res) => {
+    const { id } = req.params;
+    const card = await Card.findOne({ id: parseInt(id) });
+    if (!card) {
+        return res.status(404).json({ message: `Card with ID ${id} not found` });
+    }
+    return res.json(card);
+};
+
 export const kanji = async (req, res) => {
   const { shuffled = "false", starred = null } = req.query;
   const cards = await Card.find({ category: "Kanji" });
