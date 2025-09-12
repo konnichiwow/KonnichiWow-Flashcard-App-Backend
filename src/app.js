@@ -2,9 +2,15 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 
+import cardsRoutes from "./routes/cards";
+import userRoutes from "./routes/user";
+
 const app = express();
 app.use(express.json());
 dotenv.config();
+
+app.use("/cards", cardsRoutes);
+app.use("/user", userRoutes);
 
 connectDB();
 
