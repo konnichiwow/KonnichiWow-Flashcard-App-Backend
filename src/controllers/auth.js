@@ -70,8 +70,8 @@ export const signInUser = async (req,res) => {
     const {idToken,refreshToken,expiresIn} = firebaseRes.data;
 
     //now lets set the cookies
-
-     res.cookie("accessToken",idToken,{
+    //console.log(expiresIn);//check how long :-> 1 hour
+    res.cookie("accessToken",idToken,{
       httpOnly: true,
       secure: false, //for now
       sameSite: "strict",
@@ -100,5 +100,52 @@ export const signInUser = async (req,res) => {
 
     console.log(`Error in signing in user :`,JSON.stringify(e.response?.data, null, 2) || e.message);
     return res.status(500).json({ error: "Server Error" });
+  }
+}
+
+export const refreshTokenController = async (req,res)=>{
+  try{
+    const refreshToken = req.cookies.refreshToken;
+    if(!refreshToken){
+      return res.status(400).json({error : "No refresh token found"});
+    }
+
+    const response = await axios.post(
+      `https://securetoken.googleapis.com/v1/token?key=${process.env.FIREBASE_API_KEY}`,
+      new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken
+      }),
+      {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      }
+    );
+
+    const { id_token: newIdToken, refresh_token: newRefreshToken, expires_in } = response.data;
+
+    //Set the new cookies
+    res.cookie("accessToken", newIdToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      maxAge: parseInt(expires_in) * 1000 // convert seconds to ms
+    });
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days validity for refreshToken
+    });
+    return res.status(200).json({message:"Token refreshed successfully"});
+
+  }
+  catch(e){
+    const err = e.response?.data?.error?.message;
+    if(err==="INVALID_REFRESH_TOKEN"){
+      return res.status(401).json({error:"invalid refresh token"});
+    }
+    console.log(err||e.message);
+    return res.status(500).json({error:"Server Error"});
   }
 }
