@@ -41,16 +41,19 @@ export const vocabulary = async (req, res) => {
 
 export const star = async (req, res) => {
   const { id } = req.params;
-  if (!id) {
+  if (!id || isNaN(id)) {
     return res.status(400).json({ message: "Card ID is required" });
   }
   const user = await Users.findOne({ email: req.user.email });
+  const idInt = parseInt(id);
   if (req.method === "POST") {
-    if (!user.starredCards.includes(parseInt(id))) user.starredCards.push(parseInt(id));
+    if (!user.starredCards.includes(idInt)) user.starredCards.push(idInt);
+    else return res.status(400).json({ message: `Card with ID ${id} is already starred` });
     await user.save();
     return res.json({ message: `Card with ID ${id} starred` });
   } else if (req.method === "DELETE") {
-    user.starredCards.pop(user.starredCards.indexOf(parseInt(id)));
+    if (user.starredCards.includes(idInt)) user.starredCards.pop(user.starredCards.indexOf(idInt));
+    else return res.status(400).json({ message: `Card with ID ${id} is not starred` });
     await user.save();
     return res.json({ message: `Card with ID ${id} unstarred` });
   }
