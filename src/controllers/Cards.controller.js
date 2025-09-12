@@ -8,9 +8,7 @@ const shuffle = (arr) => {
 export const cards = async (req, res) => {
   const { id } = req.params;
   const card = await Card.findOne({ id: parseInt(id) });
-  if (!card) {
-    return res.status(404).json({ message: `Card with ID ${id} not found` });
-  }
+  if (!card) return res.status(404).json({ message: `Card with ID ${id} not found` });
   return res.json(card);
 };
 
@@ -38,4 +36,19 @@ export const vocabulary = async (req, res) => {
   return res.json(shuffled === "true" ? shuffle(cards) : cards);
 };
 
-export const star = async (req, res) => {};
+export const star = async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ message: "Card ID is required" });
+  }
+  const user = await User.findOne({ id: req.user.id });
+  if (req.method === "POST") {
+    if (!user.starredCards.includes(parseInt(id))) user.starredCards.push(parseInt(id));
+    await user.save();
+    return res.json({ message: `Card with ID ${id} starred` });
+  } else if (req.method === "DELETE") {
+    user.starredCards.pop(user.starredCards.indexOf(parseInt(id)));
+    await user.save();
+    return res.json({ message: `Card with ID ${id} unstarred` });
+  }
+};
