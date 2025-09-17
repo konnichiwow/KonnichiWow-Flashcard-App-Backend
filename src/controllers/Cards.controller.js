@@ -12,14 +12,14 @@ const shuffle = (arr) => {
 export const cards = async (req, res) => {
   const { id } = req.params;
   if (!id || isNaN(id)) return res.status(400).json({ message: "Valid Card ID is required" });
-  const card = await Card.findOne({ id: parseInt(id) });
+  const card = await Card.findOne({ id: parseInt(id) }).lean();
   if (!card) return res.status(404).json({ message: `Card with ID ${id} not found` });
   return res.json(card);
 };
 
 export const kanji = async (req, res) => {
   const { shuffled = "false", starred = null } = req.query;
-  const cards = await Card.find({ category: "Kanji" });
+  const cards = await Card.find({ category: "Kanji" }).lean();
   if (starred === "true") {
     if (!req.user) return res.status(401).json({ message: "Unauthorized" });
     const user = await Users.findOne({ email: req.user.email }).select("starredCards");
@@ -31,7 +31,7 @@ export const kanji = async (req, res) => {
 
 export const vocabulary = async (req, res) => {
   const { shuffled = "false", starred = null } = req.query;
-  const cards = await Card.find({ category: "Vocabulary" });
+  const cards = await Card.find({ category: "Vocabulary" }).lean();
   if (starred === "true") {
     if (!req.user) return res.status(401).json({ message: "Unauthorized" });
     const user = await Users.findOne({ email: req.user.email }).select("starredCards");
