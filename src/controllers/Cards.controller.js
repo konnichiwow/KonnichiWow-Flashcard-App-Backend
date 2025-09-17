@@ -21,6 +21,7 @@ export const kanji = async (req, res) => {
   const { shuffled = "false", starred = null } = req.query;
   const cards = await Card.find({ category: "Kanji" });
   if (starred === "true") {
+    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
     const user = await Users.findOne({ email: req.user.email }).select("starredCards");
     const starredCards = cards.filter(card => user.starredCards.includes(card.id));
     return res.json(shuffled === "true" ? shuffle(starredCards) : starredCards);
@@ -32,6 +33,7 @@ export const vocabulary = async (req, res) => {
   const { shuffled = "false", starred = null } = req.query;
   const cards = await Card.find({ category: "Vocabulary" });
   if (starred === "true") {
+    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
     const user = await Users.findOne({ email: req.user.email }).select("starredCards");
     const starredCards = cards.filter(card => user.starredCards.includes(card.id));
     return res.json(shuffled === "true" ? shuffle(starredCards) : starredCards);
@@ -44,6 +46,7 @@ export const star = async (req, res) => {
   if (!id || isNaN(id)) {
     return res.status(400).json({ message: "Card ID is required" });
   }
+  if (!req.user) return res.status(401).json({ message: "Unauthorized" });
   const user = await Users.findOne({ email: req.user.email });
   const idInt = parseInt(id);
   if (req.method === "POST") {
