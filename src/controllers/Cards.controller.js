@@ -49,6 +49,8 @@ export const star = async (req, res) => {
   if (!req.user) return res.status(401).json({ message: "Unauthorized" });
   const user = await Users.findOne({ email: req.user.email });
   const idInt = parseInt(id);
+  const card = await Card.findOne({ id: idInt }).lean();
+  if (!card) return res.status(404).json({ message: `Card with ID ${id} not found` });
   if (req.method === "POST") {
     if (!user.starredCards.includes(idInt)) user.starredCards.push(idInt);
     else return res.status(400).json({ message: `Card with ID ${id} is already starred` });
