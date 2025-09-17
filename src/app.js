@@ -9,8 +9,8 @@ const app = express();
 app.use(express.json());
 dotenv.config();
 
-app.use("/cards", cardsRoutes);
-app.use("/user", userRoutes);
+app.use("/api/cards", cardsRoutes);
+app.use("/api/user", userRoutes);
 
 connectDB();
 
