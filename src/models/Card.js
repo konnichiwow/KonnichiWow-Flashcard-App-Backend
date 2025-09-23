@@ -4,21 +4,21 @@ const cardSchema = new mongoose.Schema({
   id: {
     type: Number,
     required: true,
-    unique: true
+    unique: true,
   },
   question: {
     type: String,
-    required: true
+    required: true,
   },
   answer: {
     type: String,
-    required: true
+    required: true,
   },
   category: {
     type: String,
     required: true,
-    enum: ["Kanji", "Vocabulary"]
-  }
+    enum: ["kanji", "vocabulary"],
+  },
 });
 
 const Card = mongoose.model("Card", cardSchema);

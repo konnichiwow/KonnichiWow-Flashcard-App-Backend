@@ -5,7 +5,7 @@ import express from "express";
 const router = express.Router();
 
 router.post('/register', createUser);
-router.post('/login', signInUser);
+router.post('/login', signInUser); 
 
 router.get('/me', authMiddleware , (req,res)=>{
     return res.status(200).json({userDetails : req.user});

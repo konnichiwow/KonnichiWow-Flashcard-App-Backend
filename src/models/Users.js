@@ -1,7 +1,31 @@
+// import mongoose from "mongoose";
+
+// const userSchema = new mongoose.Schema({
+//   firebaseUID: {
+//     type: String,
+//     required: true,
+//     unique: true
+//   },
+//   email: {
+//     type: String,
+//     required: true,
+//     unique: true
+//   },
+//   name: String,
+//   starredCards: {
+//     type: [Number],
+//     default: []
+//   }
+// });
+
+// export default mongoose.model("Users", userSchema);
+
+
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  firebaseUID: {
+  // your fields here
+    firebaseUID: {
     type: String,
     required: true,
     unique: true
@@ -18,4 +42,7 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-export default mongoose.model("Users", userSchema);
+// ✅ Fix: reuse existing model if already compiled
+const Users = mongoose.models.Users || mongoose.model("Users", userSchema);
+
+export default Users;

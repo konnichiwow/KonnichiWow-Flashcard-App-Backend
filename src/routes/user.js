@@ -7,4 +7,4 @@ const router = express.Router();
 
 router.get("/stars", asyncHandler(stars));
 
-export default router;
+export default router; 
