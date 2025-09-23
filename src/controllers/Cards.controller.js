@@ -11,9 +11,11 @@ const shuffle = (arr) => {
 
 export const cards = async (req, res) => {
   const { id } = req.params;
-  if (!id || isNaN(id)) return res.status(400).json({ message: "Valid Card ID is required" });
+  if (!id || isNaN(id))
+    return res.status(400).json({ message: "Valid Card ID is required" });
   const card = await Card.findOne({ id: parseInt(id) }).lean();
-  if (!card) return res.status(404).json({ message: `Card with ID ${id} not found` });
+  if (!card)
+    return res.status(404).json({ message: `Card with ID ${id} not found` });
   return res.json(card);
 };
 
@@ -22,8 +24,12 @@ export const kanji = async (req, res) => {
   const cards = await Card.find({ category: "Kanji" }).lean();
   if (starred === "true") {
     if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-    const user = await Users.findOne({ email: req.user.email }).select("starredCards");
-    const starredCards = cards.filter(card => user.starredCards.includes(card.id));
+    const user = await Users.findOne({ email: req.user.email }).select(
+      "starredCards"
+    );
+    const starredCards = cards.filter((card) =>
+      user.starredCards.includes(card.id)
+    );
     return res.json(shuffled === "true" ? shuffle(starredCards) : starredCards);
   }
   return res.json(shuffled === "true" ? shuffle(cards) : cards);
@@ -34,8 +40,12 @@ export const vocabulary = async (req, res) => {
   const cards = await Card.find({ category: "Vocabulary" }).lean();
   if (starred === "true") {
     if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-    const user = await Users.findOne({ email: req.user.email }).select("starredCards");
-    const starredCards = cards.filter(card => user.starredCards.includes(card.id));
+    const user = await Users.findOne({ email: req.user.email }).select(
+      "starredCards"
+    );
+    const starredCards = cards.filter((card) =>
+      user.starredCards.includes(card.id)
+    );
     return res.json(shuffled === "true" ? shuffle(starredCards) : starredCards);
   }
   return res.json(shuffled === "true" ? shuffle(cards) : cards);
@@ -50,16 +60,68 @@ export const star = async (req, res) => {
   const user = await Users.findOne({ email: req.user.email });
   const idInt = parseInt(id);
   const card = await Card.findOne({ id: idInt }).lean();
-  if (!card) return res.status(404).json({ message: `Card with ID ${id} not found` });
+  if (!card)
+    return res.status(404).json({ message: `Card with ID ${id} not found` });
   if (req.method === "POST") {
     if (!user.starredCards.includes(idInt)) user.starredCards.push(idInt);
-    else return res.status(400).json({ message: `Card with ID ${id} is already starred` });
+    else
+      return res
+        .status(400)
+        .json({ message: `Card with ID ${id} is already starred` });
     await user.save();
     return res.json({ message: `Card with ID ${id} starred` });
   } else if (req.method === "DELETE") {
-    if (user.starredCards.includes(idInt)) user.starredCards.pop(user.starredCards.indexOf(idInt));
-    else return res.status(400).json({ message: `Card with ID ${id} is not starred` });
+    if (user.starredCards.includes(idInt))
+      user.starredCards.pop(user.starredCards.indexOf(idInt));
+    else
+      return res
+        .status(400)
+        .json({ message: `Card with ID ${id} is not starred` });
     await user.save();
     return res.json({ message: `Card with ID ${id} unstarred` });
+  }
+};
+
+export const addCard = async (req, res) => {
+  try {
+    const { id, question, answer, category } = req.body;
+
+    if (!id || !question || !answer || !category) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const newCard = new Card({ id, question, answer, category });
+    await newCard.save();
+
+    res
+      .status(201)
+      .json({ message: "Card created successfully", card: newCard });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create card" });
+  }
+};
+
+export const addBulkCards = async (req, res) => {
+  try {
+    const cards = req.body;
+
+    if (!Array.isArray(cards) || cards.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "Request body must be an array of cards" });
+    }
+
+    const inserted = await Card.insertMany(cards, { ordered: false });
+    // `ordered: false` → continues inserting even if some docs fail (e.g., duplicate IDs)
+
+    res
+      .status(201)
+      .json({ message: "Cards inserted successfully", count: inserted.length });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "Failed to insert cards", details: error.message });
   }
 };
