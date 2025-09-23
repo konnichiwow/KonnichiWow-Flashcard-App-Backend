@@ -1,45 +1,21 @@
-// import mongoose from "mongoose";
-
-// const userSchema = new mongoose.Schema({
-//   firebaseUID: {
-//     type: String,
-//     required: true,
-//     unique: true
-//   },
-//   email: {
-//     type: String,
-//     required: true,
-//     unique: true
-//   },
-//   name: String,
-//   starredCards: {
-//     type: [Number],
-//     default: []
-//   }
-// });
-
-// export default mongoose.model("Users", userSchema);
-
-
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  // your fields here
-    firebaseUID: {
+  firebaseUID: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   name: String,
   starredCards: {
     type: [Number],
-    default: []
-  }
+    default: [],
+  },
 });
 
 // ✅ Fix: reuse existing model if already compiled

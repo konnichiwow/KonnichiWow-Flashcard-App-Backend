@@ -1,4 +1,4 @@
-import { createUser , signInUser, refreshTokenController, logOutController, googleSignIn} from "../controllers/auth.js";
+import { createUser , signInUser, refreshTokenController, logOutController, googleSignIn} from "../controllers/auth.controller.js";
 import { authMiddleware } from "../middlewares/auth.js";
 import express from "express";
 

@@ -84,13 +84,13 @@ export const star = async (req, res) => {
 
 export const addCard = async (req, res) => {
   try {
-    const { id, question, answer, category } = req.body;
+    const { id, question, answer, category, level } = req.body;
 
-    if (!id || !question || !answer || !category) {
+    if (!id || !question || !answer || !category || !level) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    const newCard = new Card({ id, question, answer, category });
+    const newCard = new Card({ id, question, answer, category, level });
     await newCard.save();
 
     res
@@ -98,7 +98,10 @@ export const addCard = async (req, res) => {
       .json({ message: "Card created successfully", card: newCard });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to create card" });
+
+    res
+      .status(500)
+      .json({ error: "Failed to create card", details: error.message });
   }
 };
 
@@ -113,7 +116,6 @@ export const addBulkCards = async (req, res) => {
     }
 
     const inserted = await Card.insertMany(cards, { ordered: false });
-    // `ordered: false` → continues inserting even if some docs fail (e.g., duplicate IDs)
 
     res
       .status(201)

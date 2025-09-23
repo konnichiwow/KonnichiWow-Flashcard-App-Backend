@@ -17,7 +17,12 @@ const cardSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ["kanji", "vocabulary"],
+    enum: ["Kanji", "Vocabulary"],
+  },
+  level: {
+    type: String,
+    required: true,
+    enum: ["N1", "N2", "N3", "N4", "N5"],
   },
 });
 
