@@ -53,32 +53,38 @@ export const vocabulary = async (req, res) => {
 
 export const star = async (req, res) => {
   const { id } = req.params;
-  if (!id || isNaN(id)) {
-    return res.status(400).json({ message: "Card ID is required" });
-  }
-  if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-  const user = await Users.findOne({ email: req.user.email });
+
+  const user = await Users.findOne({ firebaseUID: req.user.uid });
+
   const idInt = parseInt(id);
-  const card = await Card.findOne({ id: idInt }).lean();
-  if (!card)
+
+  const card = await Card.findOne({ id: idInt });
+  if (!card) {
     return res.status(404).json({ message: `Card with ID ${id} not found` });
+  }
+
   if (req.method === "POST") {
-    if (!user.starredCards.includes(idInt)) user.starredCards.push(idInt);
-    else
+    if (user.starredCards.includes(idInt)) {
       return res
         .status(400)
         .json({ message: `Card with ID ${id} is already starred` });
+    }
+
+    user.starredCards.push(idInt);
     await user.save();
-    return res.json({ message: `Card with ID ${id} starred` });
-  } else if (req.method === "DELETE") {
-    if (user.starredCards.includes(idInt))
-      user.starredCards.pop(user.starredCards.indexOf(idInt));
-    else
+    return res.status(200).json({ message: `Card with ID ${id} starred` });
+  }
+
+  if (req.method === "DELETE") {
+    if (!user.starredCards.includes(idInt)) {
       return res
         .status(400)
         .json({ message: `Card with ID ${id} is not starred` });
+    }
+
+    user.starredCards = user.starredCards.filter((cardId) => cardId !== idInt);
     await user.save();
-    return res.json({ message: `Card with ID ${id} unstarred` });
+    return res.status(200).json({ message: `Card with ID ${id} unstarred` });
   }
 };
 
@@ -125,5 +131,24 @@ export const addBulkCards = async (req, res) => {
     res
       .status(500)
       .json({ error: "Failed to insert cards", details: error.message });
+  }
+};
+
+export const deleteAllCards = async (req, res) => {
+  try {
+    // This is the "happy path" - what we expect to happen
+    const deleteResult = await Card.deleteMany({});
+
+    res.status(200).json({
+      message: "All cards have been deleted successfully.",
+      deletedCount: deleteResult.deletedCount,
+    });
+  } catch (error) {
+    // This block runs if an error occurs in the 'try' block
+    console.error("Error deleting cards:", error); // Log the error for debugging
+    res.status(500).json({
+      error: "Failed to delete cards",
+      details: error.message, // Provide specific error details
+    });
   }
 };
