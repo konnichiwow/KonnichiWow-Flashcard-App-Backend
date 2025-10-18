@@ -1,34 +1,53 @@
 import express from "express";
-
 import {
-  cards,
   kanji,
   vocabulary,
-  star,
-  addCard,
-  addBulkCards,
-  deleteAllCards,
-} from "../controllers/Cards.controller.js";
-import asyncHandler from "../utils/asyncHandler.js";
-import { authMiddleware } from "../middlewares/auth.js";
+  starCard,
+  unstarCard,
+} from "../controllers/Cards.Controller.js";
 
 const router = express.Router();
 
-// --- Card Retrieval Routes ---
-router.get("/kanji", asyncHandler(kanji));
-router.get("/vocabulary", asyncHandler(vocabulary));
-router.get("/:id", asyncHandler(cards));
+/**
+ * @route   GET /api/cards/kanji
+ * @desc    Fetch all Kanji cards
+ * @query   shuffled (optional) - "true" or "false" to shuffle the cards
+ *          starred (optional) - "true" to return only starred cards
+ * @access  Public
+ */
+router.get("/kanji", kanji);
 
-// --- User Interaction Routes ---
-// Chaining .post and .delete is a clean way to handle the same URL
-router
-  .route("/star/:id")
-  .post(authMiddleware, asyncHandler(star))
-  .delete(authMiddleware, asyncHandler(star));
+/**
+ * @route   GET /api/cards/vocabulary
+ * @desc    Fetch all Vocabulary cards
+ * @query   shuffled (optional) - "true" or "false" to shuffle the cards
+ *          starred (optional) - "true" to return only starred cards
+ * @access  Public
+ */
+router.get("/vocabulary", vocabulary);
 
-// --- Card Creation & Deletion Routes ---
-router.post("/add", authMiddleware, asyncHandler(addCard)); 
-router.post("/bulk", authMiddleware, asyncHandler(addBulkCards)); 
-router.delete("/all", authMiddleware, asyncHandler(deleteAllCards)); 
+/**
+ * @route   POST /api/cards/star
+ * @desc    Star a card (sets isStarred = true)
+ * @body    level - JLPT level (N1-N5)
+ *          deckType - "Kanji" or "Vocabulary"
+ *          lessonNumber - lesson number
+ *          moduleNumber - module number (required for Vocabulary only)
+ *          cardNumber - the card number to star
+ * @access  Protected (user should be authenticated)
+ */
+router.post("/star", starCard);
+
+/**
+ * @route   POST /api/cards/unstar
+ * @desc    Unstar a card (sets isStarred = false)
+ * @body    level - JLPT level (N1-N5)
+ *          deckType - "Kanji" or "Vocabulary"
+ *          lessonNumber - lesson number
+ *          moduleNumber - module number (required for Vocabulary only)
+ *          cardNumber - the card number to unstar
+ * @access  Protected (user should be authenticated)
+ */
+router.post("/unstar", unstarCard);
 
 export default router;
