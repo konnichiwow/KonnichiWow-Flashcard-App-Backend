@@ -12,6 +12,15 @@ const userSchema = new mongoose.Schema({
     unique: true,
   },
   name: String,
+  isProfileComplete: Boolean,
+  phoneNumber: {
+    countryCode:{
+      type:String,
+    },
+    phoneNumber:{
+      type:String,
+    }
+  },
   starredCards: {
     type: [Number],
     default: [],

@@ -1,32 +1,36 @@
 import { auth } from "../config/firebase.js";
 import axios from "axios";
-import User from "../models/user.js";
+import User from "../models/Users.js";
 
 export const createUser = async (req, res) => {
   /* This controller is used by the register route.*/
   /* This controller expects email , password and name in the body*/
   try {
-    const{ email, password, name}= req.body;
-    if (!email || !password || !name) {
-      return res.status(400).json({ error: "Email, password and name are required" });
+    const{ email, password, name, countryCode , phoneNumber}= req.body;
+    if (!email || !password || !name || !countryCode || !phoneNumber) {
+      return res.status(400).json({ error: "Email, password, name, country-code and phone-number are required" });
     }
     const existingUser = await User.findOne({ email:email });
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
     }
-
     //Create user in Firebase Auth
     const userRecord = await auth.createUser({
       email,
       password,
       displayName: name,
     });
-    console.log(userRecord.uid);
+    //console.log(userRecord.uid);
     //save it in DB
     const newUser = await User.create({
       firebaseUID: userRecord.uid,
       email,
       name,
+      isProfileComplete: true,
+      phoneNumber:{
+        countryCode,
+        phoneNumber
+      }
     });
 
     res.status(201).json({
@@ -186,7 +190,8 @@ export const googleSignIn = async (req,res)=>{
       user = await User.create({
         firebaseUID:userdata.uid,
         email:userdata.email,
-        name:userdata.name
+        name:userdata.name,
+        isProfileComplete:false //because we still don't have their phoneNumber and countryCode 
       });
     }
 
@@ -204,6 +209,32 @@ export const googleSignIn = async (req,res)=>{
   }
   catch(e){
     console.log(`Error in logging user in via google : ${e}`);
+    return res.status(500).json({message:"Server Error"});
+  }
+}
+
+export const setPhoneNumberController = async(req, res)=>{
+  try{
+    const uid = req.user.uid;
+    const {phoneNumber, countryCode} = req.body;
+    if(!phoneNumber || !countryCode){
+      //if user did not provide these
+      return res.status(400).json({message:"phoneNumber and countryCode required !"});
+    }
+    const user = await User.findOne({firebaseUID:uid});
+    if(!user){
+      //if it comes here , there's a problem
+      console.log(`Error : User with uid : ${uid} is logged in , but their document is not found in database.`)
+      return res.status(404).json({message:"User not found!"});
+    }
+    user.phoneNumber.phoneNumber = phoneNumber;
+    user.phoneNumber.countryCode = countryCode;
+    user.isProfileComplete = true;
+    await user.save();
+    return res.status(200).json({message:"User Profile updated."});
+  }
+  catch(e){
+    console.log(`Error in setting User Phone Number : ${e}`);
     return res.status(500).json({message:"Server Error"});
   }
 }
