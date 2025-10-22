@@ -199,8 +199,8 @@ export const forgotPasswordController = async (req,res)=>{
           <p>Hello,</p>
           <p>You requested a password reset for your account.</p>
           <p>Click the link below to reset your password:</p>
-          <a href="${loginLink}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 5px;">Reset Password</a>
-          <p>This link will expire soon.</p>
+          <a href="${loginLink}" style="background-color: #EC275F; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 5px;">Reset Password</a>
+          <p>This link will expire in 1 hour.</p>
           <p>If you did not request this, please ignore this email.</p>
       `,
     };
