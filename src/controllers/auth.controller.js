@@ -1,7 +1,6 @@
 import { auth } from "../config/firebase.js";
 import axios from "axios";
 import User from "../models/Users.js";
-import User from "../models/user.js";
 import transporter from "../config/nodemailer.js";
 
 const validatePhoneNumber = (phoneNumber)=>{
@@ -179,6 +178,7 @@ export const userDetailsController = async (req,res)=>{
     console.log(`Error : User is signed in yet unable to query their user document : ${e.message}`);
     return res.status(500).json({error:"Server Error"});
   }
+}
  
 export const forgotPasswordController = async (req,res)=>{
   try{
