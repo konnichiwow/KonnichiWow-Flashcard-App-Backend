@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import "./config/firebase.js"; 
+import "./config/nodemailer.js";
 import auth from "./routes/auth.js";
 import cookieParser from "cookie-parser";
 
