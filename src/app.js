@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
-import "./config/firebase.js"; 
+import "./config/firebase.js";
 import "./config/nodemailer.js";
 import auth from "./routes/auth.js";
 import cookieParser from "cookie-parser";
@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
   res.send("Hello world");
 });
 
-app.use('/api/auth', auth);
+app.use("/api/auth", auth);
 
 console.log(process.env.MONGO_URI);
 
