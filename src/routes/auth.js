@@ -1,4 +1,4 @@
-import { createUser , signInUser, refreshTokenController, logOutController, googleSignIn, setPhoneNumberController} from "../controllers/auth.controller.js";
+import { createUser , signInUser, refreshTokenController, logOutController, googleSignIn, setPhoneNumberController, userDetailsController} from "../controllers/auth.controller.js";
 import { authMiddleware } from "../middlewares/auth.js";
 import express from "express";
 
@@ -7,9 +7,7 @@ const router = express.Router();
 router.post('/register', createUser);
 router.post('/login', signInUser); 
 
-router.get('/me', authMiddleware , (req,res)=>{
-    return res.status(200).json({userDetails : req.user});
-});
+router.get('/me', authMiddleware , userDetailsController);
 
 router.post('/refresh', refreshTokenController);
 router.post('/logout', authMiddleware, logOutController);
