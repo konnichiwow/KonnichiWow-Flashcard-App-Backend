@@ -1,33 +1,47 @@
 import { auth } from "../config/firebase.js";
 import axios from "axios";
+import User from "../models/Users.js";
 import User from "../models/user.js";
 import transporter from "../config/nodemailer.js";
+
+const validatePhoneNumber = (phoneNumber)=>{
+  if(!phoneNumber) return false;
+
+  const digits = /^\d+$/;
+
+  return digits.test(phoneNumber);
+}
 
 export const createUser = async (req, res) => {
   /* This controller is used by the register route.*/
   /* This controller expects email , password and name in the body*/
   try {
-    const{ email, password, name}= req.body;
-    if (!email || !password || !name) {
-      return res.status(400).json({ error: "Email, password and name are required" });
+    const{ email, password, name, countryCode , phone}= req.body;
+    if (!email || !password || !name || !phone) {
+      return res.status(400).json({ error: "Email, password, name and phone-number are required" });
     }
+    const phoneNumber = phone.trim();
     const existingUser = await User.findOne({ email:email });
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
     }
-
+    if(phoneNumber.length != 10 || !validatePhoneNumber(phoneNumber)){
+      return res.status(400).json({error:"Invalid Phone Number"});
+    }
     //Create user in Firebase Auth
     const userRecord = await auth.createUser({
       email,
       password,
       displayName: name,
     });
-    console.log(userRecord.uid);
+    //console.log(userRecord.uid);
     //save it in DB
     const newUser = await User.create({
       firebaseUID: userRecord.uid,
       email,
       name,
+      isProfileComplete: true,
+      phoneNumber
     });
 
     res.status(201).json({
@@ -155,6 +169,17 @@ export const refreshTokenController = async (req,res)=>{
   }
 }
 
+export const userDetailsController = async (req,res)=>{
+  try{
+    const userdoc = await User.findOne({email:req.user.email});
+    //console.log(userdoc);
+    return res.status(200).json({userFirebaseDetails : req.user , phoneNumber : userdoc.phoneNumber});
+  }
+  catch(e){
+    console.log(`Error : User is signed in yet unable to query their user document : ${e.message}`);
+    return res.status(500).json({error:"Server Error"});
+  }
+ 
 export const forgotPasswordController = async (req,res)=>{
   try{
     const email = req.body.email;
@@ -226,7 +251,8 @@ export const googleSignIn = async (req,res)=>{
       user = await User.create({
         firebaseUID:userdata.uid,
         email:userdata.email,
-        name:userdata.name
+        name:userdata.name,
+        isProfileComplete:false //because we still don't have their phoneNumber and countryCode 
       });
     }
 
@@ -245,5 +271,34 @@ export const googleSignIn = async (req,res)=>{
   catch(e){
     console.log(`Error in logging user in via google : ${e}`);
     return res.status(500).json({message:"Server Error"});
+  }
+}
+
+export const setPhoneNumberController = async(req, res)=>{
+  try{
+    const uid = req.user.uid;
+    const phone = req.body.phone;
+    if(!phone){
+      //if user did not provide these
+      return res.status(400).json({error:"phoneNumber required !"});
+    }
+    const phoneNumber = phone.trim();
+    if(phoneNumber.length != 10 || !validatePhoneNumber(phoneNumber)){
+      return res.status(400).json({error:"Invalid Phone Number"})
+    }
+    const user = await User.findOne({firebaseUID:uid});
+    if(!user){
+      //if it comes here , there's a problem
+      console.log(`Error : User with uid : ${uid} is logged in , but their document is not found in database.`)
+      return res.status(404).json({error:"User not found!"});
+    }
+    user.phoneNumber = phoneNumber;
+    user.isProfileComplete = true;
+    await user.save();
+    return res.status(200).json({message:"User Profile updated."});
+  }
+  catch(e){
+    console.log(`Error in setting User Phone Number : ${e}`);
+    return res.status(500).json({error:"Server Error"});
   }
 }
