@@ -1,6 +1,7 @@
 import { auth } from "../config/firebase.js";
 import axios from "axios";
 import User from "../models/user.js";
+import transporter from "../config/nodemailer.js";
 
 export const createUser = async (req, res) => {
   /* This controller is used by the register route.*/
@@ -154,6 +155,45 @@ export const refreshTokenController = async (req,res)=>{
   }
 }
 
+export const forgotPasswordController = async (req,res)=>{
+  try{
+    const email = req.body.email;
+    if(!email){
+      return res.status(400).json({message:"Email is required."});
+    }
+
+    const user = await auth.getUserByEmail(email);
+
+    const loginLink = await auth.generatePasswordResetLink(email);
+
+    const mailOptions = {
+      from: `"KonnichiWow" <${process.env.NODEMAILER_EMAIL}>`,
+      to: email,
+      subject: 'Password Reset Request',
+      html: `
+          <p>Hello,</p>
+          <p>You requested a password reset for your account.</p>
+          <p>Click the link below to reset your password:</p>
+          <a href="${loginLink}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 5px;">Reset Password</a>
+          <p>This link will expire soon.</p>
+          <p>If you did not request this, please ignore this email.</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+  }
+  catch(e){
+    if(e.code === 'auth/user-not-found'){
+      console.log(`Password reset tried for an account that does not exist : ${email}`);      
+    }
+    //we are not exposing 500 server error even if it occurs
+    console.log(`Server Error in forgotPasswordController : ${e.message}`); 
+  }
+  finally{
+    return res.status(200).json({message: "If an account with that email exists, a password reset link has been sent." });
+  }
+
+}
 
 export const logOutController = async (req,res)=>{
   try{

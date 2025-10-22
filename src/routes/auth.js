@@ -1,4 +1,4 @@
-import { createUser , signInUser, refreshTokenController, logOutController, googleSignIn} from "../controllers/auth.controller.js";
+import { createUser , signInUser, refreshTokenController, logOutController, googleSignIn, forgotPasswordController} from "../controllers/auth.controller.js";
 import { authMiddleware } from "../middlewares/auth.js";
 import express from "express";
 
@@ -14,5 +14,6 @@ router.get('/me', authMiddleware , (req,res)=>{
 router.post('/refresh', refreshTokenController);
 router.post('/logout', authMiddleware, logOutController);
 router.post('/google', googleSignIn);
+router.post('/forgotPassword', forgotPasswordController);
 
 export default router;
