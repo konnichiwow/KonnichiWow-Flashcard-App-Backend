@@ -1,5 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
+
 import connectDB from "./config/db.js";
 import "./config/firebase.js"; 
 import "./config/nodemailer.js";
@@ -12,6 +14,8 @@ import userRoutes from "./routes/user.js";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors());
+
 dotenv.config();
 
 app.use("/api/cards", cardsRoutes);
