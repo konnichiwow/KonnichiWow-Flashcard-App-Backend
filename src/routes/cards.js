@@ -4,7 +4,7 @@ import {
   vocabulary,
   starCard,
   unstarCard,
-} from "../controllers/Cards.Controller.js";
+} from "../controllers/Cards.controller.js";
 
 const router = express.Router();
 
