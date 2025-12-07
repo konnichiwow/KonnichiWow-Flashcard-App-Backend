@@ -23,12 +23,12 @@ const getCardsByCategory = async (category) => {
     deck.lessons.forEach((lesson) => {
       if (category === "Kanji") {
         cards.push(
-          ...lesson.kanjiCards.map((c) => ({ ...c, level: level.level }))
+          ...lesson.kanjiCards.map((c) => ({ ...c, level: level.level, lessonNumber: lesson.lessonNumber }))
         );
       } else {
         lesson.modules.forEach((module) => {
           cards.push(
-            ...module.cards.map((c) => ({ ...c, level: level.level }))
+            ...module.cards.map((c) => ({ ...c, level: level.level, lessonNumber: lesson.lessonNumber, moduleNumber: module.moduleNumber }))
           );
         });
       }
