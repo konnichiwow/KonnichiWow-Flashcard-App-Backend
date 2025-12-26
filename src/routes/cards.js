@@ -4,6 +4,7 @@ import {
   vocabulary,
   starCard,
   unstarCard,
+  createBulkJLPTLevels,
 } from "../controllers/Cards.Controller.js";
 
 const router = express.Router();
@@ -49,5 +50,27 @@ router.post("/star", starCard);
  * @access  Protected (user should be authenticated)
  */
 router.post("/unstar", unstarCard);
+
+/**
+ * @route   POST /api/jlpt-levels/bulk
+ * @desc    Add multiple JLPTLevel documents in a single request.
+ * @access  Public
+ *
+ * @body    An array of JLPTLevel objects.
+ *
+ * @example_payload
+ * [
+ * {
+ * "level": "N5",
+ * "decks": [ { "type": "Vocabulary", "lessons": [] } ]
+ * },
+ * {
+ * "level": "N4",
+ * "decks": [ { "type": "Kanji", "lessons": [] } ]
+ * }
+ * ]
+ */
+
+router.post("/bulk", createBulkJLPTLevels);
 
 export default router;

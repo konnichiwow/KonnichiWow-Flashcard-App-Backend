@@ -139,3 +139,57 @@ export const unstarCard = async (req, res) => {
     return res.status(500).json({ error: "Failed to unstar card", details: error.message });
   }
 };
+
+
+
+
+
+export const createBulkJLPTLevels = async (req, res) => {
+  // 1. Get the array of records from the request body
+  const records = req.body;
+
+  // 2. Validate the input
+  if (!Array.isArray(records) || records.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Request body must be a non-empty array of JLPTLevel records.',
+    });
+  }
+
+  try {
+    // 3. Use insertMany() for efficient bulk insertion
+    // This performs a single database operation
+    const newLevels = await JLPTLevel.insertMany(records, {
+      ordered: false, // Continue inserting even if one document fails (e.g., duplicate key)
+    });
+
+    // 4. Send a success response
+    return res.status(201).json({
+      success: true,
+      message: `Successfully created ${newLevels.length} new JLPTLevel records.`,
+      data: newLevels,
+    });
+
+  } catch (error) {
+    // 5. Handle errors
+    // This will catch validation errors (e.g., missing required fields, enum mismatch)
+    // or duplicate key errors (if 'unique: true' on 'level' is violated)
+    
+    // 'error.writeErrors' is available when using insertMany with ordered: false
+    if (error.writeErrors) {
+      const duplicates = error.writeErrors.filter(e => e.err.code === 11000);
+      return res.status(409).json({ // 409 Conflict
+        success: false,
+        message: 'Some records failed, likely due to duplicate levels.',
+        duplicates: duplicates.map(d => d.err.op.level),
+        error: error.message,
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: 'Failed to create records. Check payload for schema validation errors.',
+      error: error.message,
+    });
+  }
+};
