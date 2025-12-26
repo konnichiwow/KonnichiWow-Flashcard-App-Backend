@@ -4,8 +4,7 @@ import {
   vocabulary,
   starCard,
   unstarCard,
-  createBulkJLPTLevels,
-} from "../controllers/Cards.Controller.js";
+} from "../controllers/Cards.controller.js";
 
 const router = express.Router();
 
