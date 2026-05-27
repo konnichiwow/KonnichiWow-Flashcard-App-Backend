@@ -15,42 +15,60 @@ dotenv.config();
 
 const app = express();
 
-const allowedOrigins = [
+const allowedOrigins = new Set([
   "http://localhost:5173",
+  "http://127.0.0.1:5173",
   "http://localhost:3000",
-  
-];
+  "http://127.0.0.1:3000",
+]);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true, 
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// preflight 
-//app.options('*', cors());
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) {
+        callback(null, true);
+      } else {
+        console.warn("[cors] Blocked origin:", origin);
+        callback(null, false);
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json());
 app.use(cookieParser());
 
-connectDB();
-
 app.get("/", (req, res) => {
   res.send("Hello world");
+});
+
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true, service: "konnichiwow-api" });
 });
 
 app.use("/api/auth", auth);
 app.use("/api/cards", cardsRoutes);
 app.use("/api/user", userRoutes);
 
-console.log(process.env.MONGO_URI);
+app.use((err, req, res, next) => {
+  console.error("[server]", err?.message || err);
+  if (res.headersSent) return next(err);
+  res.status(500).json({ error: "Server error" });
+});
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+async function start() {
+  try {
+    await connectDB();
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  } catch (err) {
+    console.error(`Failed to start server: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+start();
